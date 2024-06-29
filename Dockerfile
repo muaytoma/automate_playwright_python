@@ -1,7 +1,11 @@
-# Example Dockerfile
+# Use the official Playwright Docker image
 FROM mcr.microsoft.com/playwright/python:v1.44.0-jammy
 
+# Set working directory
 WORKDIR /app
+
+# Update pip to the latest version
+RUN pip install --upgrade pip
 
 # Install Python dependencies
 COPY requirements.txt .
