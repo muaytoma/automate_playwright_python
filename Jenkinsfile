@@ -25,7 +25,7 @@ pipeline {
         echo "Cloning from Git."
         git branch: 'master',
         credentialsId: 'gitlab_man',
-        url: 'http://JSaetung:s_yPukyW_cNCZYA4eL2B@gitlab.th.kerryexpress.com/it-architecture/track-and-trace-api.git'
+        url: 'http://SSiriprapasak:pVzMofdJzUikP4reo6W7@gitlab.th.kerryexpress.com/SSiriprapasak/tnt-test.git'
       }
     }
     stage('Build Docker Image') {
@@ -64,7 +64,5 @@ pipeline {
     //     }
     //   }
     }
- 
 
-  }
 }

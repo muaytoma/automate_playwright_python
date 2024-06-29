@@ -37,8 +37,7 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     libatspi2.0-0 \
     libgbm-dev \
-    libnss3-tools \
-    wget
+    libnss3-tools 
 
 # Install Python dependencies
 COPY requirements.txt .
