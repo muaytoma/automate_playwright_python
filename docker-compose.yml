@@ -2,6 +2,6 @@ version: '3.8'
 
 services:
   my-service:
-    image: pytest:lastest
+    image: pytest:v1
     volumes:
       - ./output:/app/output

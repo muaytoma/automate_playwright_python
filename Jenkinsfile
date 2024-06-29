@@ -2,21 +2,13 @@ def version
 def stagingServers = ["10.112.86.169"]
 pipeline {
 
-  environment {
-    APP_NAME = "tntest"
-    STAGING_USER = "docker"
-    STAGING_BASED_PATH = "/home/" + "$STAGING_USER"
-    PACKAGE_NAME = "package_tntest"
-    PACKAGE_PATH = "/nfs-package/" + "$APP_NAME"
-    ARCHIVED_PKG = "$PACKAGE_NAME" + ".tgz"
-    registry = "ke-registry.th.kerryexpress.com"
-    registryUrl = "https://" + "$registry"
-    image = "$registry" + "/" + "$APP_NAME" + ":"
-    registryCredential = 'ke_registry'
-  
-  }
 
   agent none
+
+  environment {
+   APP_IMAGE = "tnt-test"
+  }
+
 
   stages {
     stage ('Clone') {
@@ -31,18 +23,17 @@ pipeline {
     stage('Build Docker Image') {
       steps {
         script {
-            docker.build('playwright-python')
+            docker.build(APP_IMAGE)
         }
       }
     }
-
     stage('Run Tests') {
       steps {
-        script {
-          docker.image('playwright-python').inside {
-              sh 'pytest --html=output/report.html'
+          script {
+              docker.image(APP_IMAGE).inside {
+                  sh 'pytest app/test_example.py --html=/app/output/report.html'
+              }
           }
-        }
       }
     }
 
