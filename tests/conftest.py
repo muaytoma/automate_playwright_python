@@ -19,3 +19,14 @@ from typing import Generator
 @pytest.fixture
 def tracking_page(page: Page) -> TrackandTraceSearchPage:
   return TrackandTraceSearchPage(page)
+
+
+@pytest.fixture(scope='function')
+def page(playwright: Playwright) -> Page:
+    browser = playwright.chromium.launch(headless=True)
+    context = browser.new_context()
+    page = context.new_page()
+    yield page
+    page.close()
+    context.close()
+    browser.close()
