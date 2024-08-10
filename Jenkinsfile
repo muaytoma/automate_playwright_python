@@ -1,59 +1,54 @@
-def version
-def stagingServers = ["10.112.86.169"]
 pipeline {
+    agent any
 
-
-  agent none
-
-  environment {
-   APP_IMAGE = "tnt-test"
-  }
-
-
-  stages {
-    stage ('Clone') {
-      agent { label 'slave_linux'}
-      steps {
-        echo "Cloning from Git."
-        git branch: 'master',
-        credentialsId: 'gitlab_man',
-        url: 'http://SSiriprapasak:pVzMofdJzUikP4reo6W7@gitlab.th.kerryexpress.com/SSiriprapasak/tnt-test.git'
-      }
+    environment {
+        GIT_REPO_URL = 'git_url'  // Change this to your repository URL
+        GIT_BRANCH = 'master'  // Change this to your branch
+        PYTHONPATH = ".:${env.WORKSPACE}"  // Add the workspace to the PYTHONPATH
     }
-    stage('Build Docker Image') {
-      steps {
-        script {
-            docker.build(APP_IMAGE)
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                // Checkout code from GitHub
+                git branch: "${GIT_BRANCH}", url: "${GIT_REPO_URL}", credentialsId: 'github-token'
+            }
         }
-      }
+        
+        stage('Install Dependencies') {
+            steps {
+                // Install Python dependencies
+                sh '''
+                pip install -r requirements.txt
+                python -m playwright install
+                '''
+            }
+        }
+        stage('Run E2E Tests') {
+            steps {
+                // Run Playwright tests with pytest
+                sh '''
+            
+                export PYTHONPATH=$PYTHONPATH:$(pwd)
+                pytest tests/test_search.py --maxfail=1 --disable-warnings -v --junitxml=test-results/results.xml || true
+                '''
+            }
+        }
+        stage('Archive Test Results') {
+            steps {
+                // Archive the test results
+                junit 'test-results/results.xml'
+            }
+        }
     }
-    stage('Run Tests') {
-      steps {
-          script {
-              docker.image(APP_IMAGE).inside {
-                  sh 'pytest app/test_example.py --html=/app/output/report.html'
-              }
-          }
-      }
+    post {
+        always {
+            // Archive artifacts
+            archiveArtifacts artifacts: 'test-results/results.xml', allowEmptyArchive: true
+        }
+        cleanup {
+            // Clean workspace after build
+            cleanWs()
+        }
     }
-
-    // stage("Run Tests") {
-    //   agent {
-    //     docker {
-    //       image 'python:3.7.7-alpine3.11'
-    //       label 'slave_linux'
-    //     }
-    //   }
-
-    //   steps {
-    //     withEnv(["HOME=${WORKSPACE}","PYTHONPATH=${WORKSPACE}:${WORKSPACE}/api:${WORKSPACE}/api/app:${WORKSPACE}/test:${WORKSPACE}/config"]) {
-    //       echo "Running unit testing."
-    //       sh 'rm -rf ${WORKSPACE}/log'
-    //       sh 'mkdir -p ${WORKSPACE}/log'
-    //       sh 'pip install -r requirements.txt'
-    //       sh "python -m pytest ${WORKSPACE}/test/test_service.py --junitxml=${env.WORKSPACE}/test-coverage.xml --cov-config=.coveragerc --cov=api --cov-report=xml"
-    //     }
-    //   }
-    }
-
 }
